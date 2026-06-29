@@ -1,4 +1,9 @@
-flask
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Flask-WTF
+gunicorn
 python-binance
 python-dotenv
-gunicorn
+requests
+pandas
