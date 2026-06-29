@@ -1,20 +1,28 @@
-from flask import Flask
-from config import Config
-from database import db
+from database import SessionLocal
+from models import Order
 
-from dashboard.routes import dashboard_bp
-from api.webhook import webhook_bp
 
-app = Flask(__name__)
-app.config.from_object(Config)
+@app.route("/api/orders")
+def orders():
 
-db.init_app(app)
+    db = SessionLocal()
 
-with app.app_context():
-    db.create_all()
+    data = db.query(Order).order_by(Order.id.desc()).limit(100).all()
 
-app.register_blueprint(dashboard_bp)
-app.register_blueprint(webhook_bp)
+    result = []
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    for i in data:
+
+        result.append({
+            "id": i.id,
+            "symbol": i.symbol,
+            "side": i.side,
+            "qty": i.qty,
+            "price": i.price,
+            "status": i.status,
+            "time": i.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    db.close()
+
+    return result
