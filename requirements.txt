@@ -1,16 +1,6 @@
-fastapi
-uvicorn[standard]
-
-jinja2
-
-python-multipart
-
-sqlalchemy
-
+Flask
+python-binance
 python-dotenv
 
-python-binance
-
-requests
-
+SQLAlchemy
 pandas
