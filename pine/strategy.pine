@@ -1,0 +1,129 @@
+//@version=6
+strategy("Trend Master V8 Pro", overlay=true,
+     initial_capital=10000,
+     pyramiding=0,
+     commission_type=strategy.commission.percent,
+     commission_value=0.05,
+     calc_on_order_fills=true,
+     calc_on_every_tick=false)
+
+//========= INPUT =========//
+groupTrend = "Trend Filter"
+
+emaFastLen = input.int(20, "EMA Fast", group=groupTrend)
+emaSlowLen = input.int(50, "EMA Slow", group=groupTrend)
+emaTrendLen = input.int(200, "EMA Trend", group=groupTrend)
+
+htf1 = input.timeframe("60", "HTF 1", group=groupTrend)
+htf2 = input.timeframe("240", "HTF 2", group=groupTrend)
+
+groupFilter = "Filters"
+
+adxLen = input.int(14, "ADX", group=groupFilter)
+adxMin = input.float(25, "ADX Min", group=groupFilter)
+
+rsiLen = input.int(14, "RSI", group=groupFilter)
+atrLen = input.int(14, "ATR", group=groupFilter)
+
+volLen = input.int(20, "Volume SMA", group=groupFilter)
+volMul = input.float(1.2, "Volume Multiplier", step=0.1)
+
+//========= EMA =========//
+
+ema20 = ta.ema(close, emaFastLen)
+ema50 = ta.ema(close, emaSlowLen)
+ema200 = ta.ema(close, emaTrendLen)
+
+//========= HIGHER TF =========//
+
+ema200H1 =
+    request.security(syminfo.tickerid,
+    htf1,
+    ta.ema(close, emaTrendLen),
+    lookahead=barmerge.lookahead_off)
+
+ema200H4 =
+    request.security(syminfo.tickerid,
+    htf2,
+    ta.ema(close, emaTrendLen),
+    lookahead=barmerge.lookahead_off)
+
+//========= TREND =========//
+
+trendLong =
+    close > ema200 and
+    close > ema200H1 and
+    close > ema200H4
+
+trendShort =
+    close < ema200 and
+    close < ema200H1 and
+    close < ema200H4
+
+//========= ADX =========//
+
+up = ta.change(high)
+down = -ta.change(low)
+
+plusDM = up > down and up > 0 ? up : 0
+minusDM = down > up and down > 0 ? down : 0
+
+trur = ta.rma(ta.tr, adxLen)
+
+plusDI = 100 * ta.rma(plusDM, adxLen) / trur
+minusDI = 100 * ta.rma(minusDM, adxLen) / trur
+
+dx = math.abs(plusDI - minusDI) / (plusDI + minusDI) * 100
+adx = ta.rma(dx, adxLen)
+
+//========= RSI =========//
+
+rsi = ta.rsi(close, rsiLen)
+
+//========= ATR =========//
+
+atr = ta.atr(atrLen)
+
+//========= VOLUME =========//
+
+volMA = ta.sma(volume, volLen)
+goodVolume = volume > volMA * volMul
+
+//========= EMA CROSS =========//
+
+bullCross = ta.crossover(ema20, ema50)
+bearCross = ta.crossunder(ema20, ema50)
+
+//========= FINAL FILTER =========//
+
+allowLong =
+    trendLong and
+    bullCross and
+    adx > adxMin and
+    rsi > 55 and
+    goodVolume
+
+allowShort =
+    trendShort and
+    bearCross and
+    adx > adxMin and
+    rsi < 45 and
+    goodVolume
+
+//========= PLOT =========//
+
+plot(ema20, color=color.aqua)
+plot(ema50, color=color.yellow)
+plot(ema200, color=color.orange, linewidth=2)
+
+plotshape(allowLong,
+     style=shape.triangleup,
+     location=location.belowbar,
+     color=color.lime,
+     title="LONG")
+
+plotshape(allowShort,
+     style=shape.triangledown,
+     location=location.abovebar,
+     color=color.red,
+     title="SHORT")
