@@ -5,6 +5,8 @@ import os
 client=Client(
     os.getenv("BINANCE_KEY"),
     os.getenv("BINANCE_SECRET")
+    symbol=SYMBOL,
+    leverage=int(os.getenv("LEVERAGE",5))
 )
 
 
