@@ -1,6 +1,5 @@
 Flask
-python-binance
 python-dotenv
-
+requests
 SQLAlchemy
-pandas
+waitress

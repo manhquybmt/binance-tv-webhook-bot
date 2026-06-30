@@ -1,28 +1,10 @@
-from database import SessionLocal
-from models import Order
+from bot import create_app
 
+app = create_app()
 
-@app.route("/api/orders")
-def orders():
-
-    db = SessionLocal()
-
-    data = db.query(Order).order_by(Order.id.desc()).limit(100).all()
-
-    result = []
-
-    for i in data:
-
-        result.append({
-            "id": i.id,
-            "symbol": i.symbol,
-            "side": i.side,
-            "qty": i.qty,
-            "price": i.price,
-            "status": i.status,
-            "time": i.created_at.strftime("%Y-%m-%d %H:%M:%S")
-        })
-
-    db.close()
-
-    return result
+if __name__ == "__main__":
+    app.run(
+        host=app.config["HOST"],
+        port=app.config["PORT"],
+        debug=app.config["DEBUG"]
+    )

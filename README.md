@@ -1,15 +1,11 @@
-TradingView → Binance Futures Auto Trading Bot
+Project
 
-Features
+Install
 
-✔ TradingView Webhook
+Run
 
-✔ Binance Futures
+Folder Structure
 
-✔ Dashboard
+Roadmap
 
-✔ Statistics
-
-✔ SQLite
-
-✔ GitHub Deploy
+License
