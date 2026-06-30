@@ -1,28 +1,25 @@
-from database import SessionLocal
-from models import Order
+from flask import Flask
+
+app = Flask(__name__)
 
 
-@app.route("/api/orders")
-def orders():
+@app.get("/")
+def home():
+    return {
+        "service": "Binance TradingView Webhook Bot",
+        "version": "0.1.0",
+        "status": "running"
+    }
 
-    db = SessionLocal()
 
-    data = db.query(Order).order_by(Order.id.desc()).limit(100).all()
+@app.get("/health")
+def health():
+    return {
+        "status": "ok"
+    }
 
-    result = []
 
-    for i in data:
+if __name__ == "__main__":
+    from config import HOST, PORT
 
-        result.append({
-            "id": i.id,
-            "symbol": i.symbol,
-            "side": i.side,
-            "qty": i.qty,
-            "price": i.price,
-            "status": i.status,
-            "time": i.created_at.strftime("%Y-%m-%d %H:%M:%S")
-        })
-
-    db.close()
-
-    return result
+    app.run(host=HOST, port=PORT)
