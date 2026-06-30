@@ -3,7 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
-    SQLALCHEMY_DATABASE_URI = "sqlite:///data/trading.db"
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+HOST = os.getenv("HOST", "0.0.0.0")
+PORT = int(os.getenv("PORT", 5000))
+
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "CHANGE_ME")
+
+BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
+BINANCE_SECRET_KEY = os.getenv("BINANCE_SECRET_KEY", "")
