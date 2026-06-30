@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from config import HOST, PORT, WEBHOOK_SECRET
+from binance_api import place_market_order
 
 app = Flask(__name__)
 
@@ -19,32 +20,47 @@ def health():
 
 
 @app.post("/webhook")
-def webhook():
-    data = request.get_json(silent=True)
+symbol = data.get("symbol")
+side = data.get("side")
+qty = data.get("qty")
 
-    if not data:
-        return jsonify({
-            "success": False,
-            "message": "Invalid JSON"
-        }), 400
+# Kiểm tra dữ liệu
+if side not in ("BUY", "SELL"):
+    return jsonify({
+        "success": False,
+        "message": "Invalid side"
+    }), 400
 
-    # Kiểm tra Secret
-    if data.get("secret") != WEBHOOK_SECRET:
-        return jsonify({
-            "success": False,
-            "message": "Invalid secret"
-        }), 401
+if not symbol:
+    return jsonify({
+        "success": False,
+        "message": "Missing symbol"
+    }), 400
 
-    print("=" * 50)
-    print("TradingView Alert Received")
-    print(data)
-    print("=" * 50)
+if qty is None or float(qty) <= 0:
+    return jsonify({
+        "success": False,
+        "message": "Invalid quantity"
+    }), 400
+
+try:
+    order = place_market_order(
+        symbol=symbol,
+        side=side,
+        quantity=qty
+    )
 
     return jsonify({
         "success": True,
-        "message": "Webhook received"
+        "orderId": order["orderId"],
+        "status": order["status"]
     })
 
+except Exception as e:
+    return jsonify({
+        "success": False,
+        "message": str(e)
+    }), 500
 
 if __name__ == "__main__":
     app.run(host=HOST, port=PORT)
